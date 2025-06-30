@@ -29,6 +29,7 @@ import com.moilioncircle.redis.replicator.rdb.RdbValueVisitor;
 import com.moilioncircle.redis.replicator.rdb.datatype.ContextKeyValuePair;
 import com.moilioncircle.redis.replicator.rdb.datatype.DB;
 import com.moilioncircle.redis.replicator.rdb.datatype.Function;
+import com.moilioncircle.redis.replicator.rdb.datatype.Slot;
 
 /**
  * @author Leon Chen
@@ -66,6 +67,15 @@ public class SkipRdbVisitor extends DefaultRdbVisitor {
     @Override
     public DB applyResizeDB(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
         SkipRdbParser parser = new SkipRdbParser(in);
+        parser.rdbLoadLen();
+        parser.rdbLoadLen();
+        return null;
+    }
+    
+    @Override
+    public Slot applySlotInfo(RedisInputStream in, int version) throws IOException {
+        SkipRdbParser parser = new SkipRdbParser(in);
+        parser.rdbLoadLen();
         parser.rdbLoadLen();
         parser.rdbLoadLen();
         return null;
