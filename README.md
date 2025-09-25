@@ -466,7 +466,9 @@ Replicator replicator = new RedisReplicator("rediss://user:pass@127.0.0.1:6379?r
 
 ## 5.2. EOFException
 
-Adjust the Redis server settings as follows. For more details, please refer to [redis.conf](https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf).
+When event consumption is too slow and the backlog of events exceeds the Redis backlog limit, Redis will actively disconnect from the slave. When Redis-replicator reconnects, it will perform a full synchronization. To avoid this situation, you need to set the parameter `client-output-buffer-limit slave 0 0 0`.
+
+For more details, please refer to [redis.conf](https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf).
 
 ```
 client-output-buffer-limit slave 0 0 0

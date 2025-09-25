@@ -476,11 +476,13 @@ Replicator replicator = new RedisReplicator("rediss://user:pass@127.0.0.1:6379?r
 | **HSETEX**   | **HPEXPIREAT** |                    |              |              |                    |  
   
 ## 5.2. 当出现EOFException
+
+当消费事件过慢积压事件超过redis backlog限制时，redis会主动断开与slave的连接，Redis-replicator再重连时会走全量同步，如果想避免这一情况，需要设置参数`client-output-buffer-limit slave 0 0 0`
   
-* 调整redis server中的以下配置. 相关配置请参考 [redis.conf](https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf)  
+相关配置请参考 [redis.conf](https://raw.githubusercontent.com/antirez/redis/3.0/redis.conf)  
   
 ```java  
-    client-output-buffer-limit slave 0 0 0
+client-output-buffer-limit slave 0 0 0
 ```  
 **警告: 这个配置可能会使redis-server中的内存溢出**  
   
