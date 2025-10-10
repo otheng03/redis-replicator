@@ -24,6 +24,7 @@ import static com.moilioncircle.redis.replicator.util.Strings.isEquals;
 import java.util.Objects;
 
 import com.moilioncircle.redis.replicator.cmd.CommandParser;
+import com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy;
 import com.moilioncircle.redis.replicator.cmd.impl.Limit;
 import com.moilioncircle.redis.replicator.cmd.impl.MaxLen;
 import com.moilioncircle.redis.replicator.cmd.impl.MinId;
@@ -42,6 +43,7 @@ public class XTrimParser implements CommandParser<XTrimCommand> {
         MaxLen maxLen = null;
         MinId minId = null;
         Limit limit = null;
+        DeletionPolicy policy = null;
         for (; idx < command.length; idx++) {
             String token = toRune(command[idx]);
             if (isEquals(token, "MAXLEN")) {
@@ -70,9 +72,15 @@ public class XTrimParser implements CommandParser<XTrimCommand> {
                 idx++;
                 long count = toLong(command[idx]);
                 limit = new Limit(0, count);
+            } else if (isEquals(token, "KEEPREF")) {
+                policy = DeletionPolicy.KEEPREF;
+            } else if (isEquals(token, "DELREF")) {
+                policy = DeletionPolicy.DELREF;
+            } else if (isEquals(token, "ACKED")) {
+                policy = DeletionPolicy.ACKED;
             }
         }
         
-        return new XTrimCommand(key, maxLen, minId, limit);
+        return new XTrimCommand(key, maxLen, minId, limit, policy);
     }
 }

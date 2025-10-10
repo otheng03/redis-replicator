@@ -1,3 +1,11 @@
+### 3.10.0
+
+Support for redis 8.2.x.  
+
+AOF
+1. Add support for `XACKDEL` command.
+2. Add support for `XDELEX` command.
+
 ### 3.9.0
 
 Support for redis 7.4.x and 8.0.x  

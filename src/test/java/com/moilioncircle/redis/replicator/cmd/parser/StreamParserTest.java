@@ -16,11 +16,14 @@
 
 package com.moilioncircle.redis.replicator.cmd.parser;
 
+import static com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy.ACKED;
+import static com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy.KEEPREF;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.moilioncircle.redis.replicator.cmd.impl.XAckCommand;
@@ -150,6 +153,20 @@ public class StreamParserTest extends AbstractParserTest {
         {
             XAddParser parser = new XAddParser();
             XAddCommand cmd = parser.parse(toObjectArray("XADD key minid ~ 1528524799760-0 limit 5 * field value field1 value1".split(" ")));
+            Assert.assertNull(cmd.getPolicy());
+            assertEquals("key", cmd.getKey());
+            assertEquals("*", cmd.getId());
+            assertEquals("1528524799760-0", cmd.getMinId().getId());
+            assertTrue(cmd.getMinId().isApproximation());
+            assertEquals(5L, cmd.getLimit().getCount());
+            assertTrue(cmd.getFields().containsKey("field".getBytes()));
+            assertTrue(cmd.getFields().containsKey("field1".getBytes()));
+        }
+        
+        {
+            XAddParser parser = new XAddParser();
+            XAddCommand cmd = parser.parse(toObjectArray("XADD key KEEPREF minid ~ 1528524799760-0 limit 5 * field value field1 value1".split(" ")));
+            Assert.assertEquals(KEEPREF, cmd.getPolicy());
             assertEquals("key", cmd.getKey());
             assertEquals("*", cmd.getId());
             assertEquals("1528524799760-0", cmd.getMinId().getId());
@@ -445,12 +462,23 @@ public class StreamParserTest extends AbstractParserTest {
         {
             XTrimParser parser = new XTrimParser();
             XTrimCommand cmd = parser.parse(toObjectArray("XTRIM key minid = 1528524899760-0 limit 5".split(" ")));
+            Assert.assertNull(cmd.getPolicy());
             assertEquals("key", cmd.getKey());
             assertEquals("1528524899760-0", cmd.getMinId().getId());
             assertEquals(5L, cmd.getLimit().getCount());
             assertFalse(cmd.getMinId().isApproximation());
         }
-    
+        
+        {
+            XTrimParser parser = new XTrimParser();
+            XTrimCommand cmd = parser.parse(toObjectArray("XTRIM key minid = 1528524899760-0 limit 5 ACKED".split(" ")));
+            Assert.assertEquals(ACKED, cmd.getPolicy());
+            assertEquals("key", cmd.getKey());
+            assertEquals("1528524899760-0", cmd.getMinId().getId());
+            assertEquals(5L, cmd.getLimit().getCount());
+            assertFalse(cmd.getMinId().isApproximation());
+        }
+        
         {
             XSetIdParser parser = new XSetIdParser();
             XSetIdCommand cmd = parser.parse(toObjectArray("XSETID key $".split(" ")));

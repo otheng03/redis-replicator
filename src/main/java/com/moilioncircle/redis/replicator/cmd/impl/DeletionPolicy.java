@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Leon Chen
+ * Copyright 2016-2017 Leon Chen
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.moilioncircle.redis.replicator.cmd.impl;
 
-import java.io.Serializable;
-
 /**
- * @author Leon Chen
- * @since 2.1.0
+ * @author Baoyi Chen
+ * @since 3.10.0
  */
-public enum Op implements Serializable {
-    AND, OR, XOR, NOT, DIFF, DIFF1, ANDOR, ONE
+public enum DeletionPolicy {
+    KEEPREF, DELREF, ACKED
 }
