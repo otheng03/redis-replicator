@@ -107,9 +107,11 @@ import com.moilioncircle.redis.replicator.cmd.parser.SetRangeParser;
 import com.moilioncircle.redis.replicator.cmd.parser.SortParser;
 import com.moilioncircle.redis.replicator.cmd.parser.SwapDBParser;
 import com.moilioncircle.redis.replicator.cmd.parser.UnLinkParser;
+import com.moilioncircle.redis.replicator.cmd.parser.XAckDelParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XAckParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XAddParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XClaimParser;
+import com.moilioncircle.redis.replicator.cmd.parser.XDelExParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XDelParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XGroupParser;
 import com.moilioncircle.redis.replicator.cmd.parser.XSetIdParser;
@@ -336,6 +338,9 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
         addCommandParser(CommandName.name("HSETEX"), new HSetExParser());
         addCommandParser(CommandName.name("HPEXPIREAT"), new HPExpireAtParser());
         addCommandParser(CommandName.name("HPERSIST"), new HPersistParser());
+        // since redis 8.2
+        addCommandParser(CommandName.name("XACKDEL"), new XAckDelParser());
+        addCommandParser(CommandName.name("XDELEX"), new XDelExParser());
     }
     
     @Override

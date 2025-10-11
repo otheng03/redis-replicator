@@ -17,6 +17,7 @@
 package com.moilioncircle.redis.replicator.cmd.parser;
 
 import static com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy.ACKED;
+import static com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy.DELREF;
 import static com.moilioncircle.redis.replicator.cmd.impl.DeletionPolicy.KEEPREF;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -27,9 +28,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.moilioncircle.redis.replicator.cmd.impl.XAckCommand;
+import com.moilioncircle.redis.replicator.cmd.impl.XAckDelCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XAddCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XClaimCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XDelCommand;
+import com.moilioncircle.redis.replicator.cmd.impl.XDelExCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XGroupCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XGroupCreateCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XGroupCreateConsumerCommand;
@@ -511,6 +514,46 @@ public class StreamParserTest extends AbstractParserTest {
             assertEquals("1528524899760-0", cmd.getMaxDeletedEntryId());
         }
         
+        {
+            XAckDelParser parser = new XAckDelParser();
+            XAckDelCommand cmd = parser.parse(toObjectArray("XACKDEL key group DELREF IDS 1 1528524899760-0".split(" ")));
+            assertEquals("key", cmd.getKey());
+            assertEquals("group", cmd.getGroup());
+            Assert.assertEquals(DELREF, cmd.getPolicy());
+            assertEquals("1528524899760-0", cmd.getIds()[0]);
+            assertEquals(1, cmd.getIds().length);
+        }
+        
+        {
+            XAckDelParser parser = new XAckDelParser();
+            XAckDelCommand cmd = parser.parse(toObjectArray("XACKDEL key group IDS 2 1528524899760-0 1628524899760-0".split(" ")));
+            assertEquals("key", cmd.getKey());
+            assertEquals("group", cmd.getGroup());
+            assertNull(cmd.getPolicy());
+            assertEquals("1528524899760-0", cmd.getIds()[0]);
+            assertEquals("1628524899760-0", cmd.getIds()[1]);
+            assertEquals(2, cmd.getIds().length);
+        }
+        
+        {
+            XDelExParser parser = new XDelExParser();
+            XDelExCommand cmd = parser.parse(toObjectArray("XDELEX key IDS 2 1528524899760-0 1628524899760-0".split(" ")));
+            assertEquals("key", cmd.getKey());
+            assertNull(cmd.getPolicy());
+            assertEquals("1528524899760-0", cmd.getIds()[0]);
+            assertEquals("1628524899760-0", cmd.getIds()[1]);
+            assertEquals(2, cmd.getIds().length);
+        }
+        
+        {
+            XDelExParser parser = new XDelExParser();
+            XDelExCommand cmd = parser.parse(toObjectArray("XDELEX key ACKED IDS 2 1528524899760-0 1628524899760-0".split(" ")));
+            assertEquals("key", cmd.getKey());
+            Assert.assertEquals(ACKED, cmd.getPolicy());
+            assertEquals("1528524899760-0", cmd.getIds()[0]);
+            assertEquals("1628524899760-0", cmd.getIds()[1]);
+            assertEquals(2, cmd.getIds().length);
+        }
     }
     
 }
