@@ -241,8 +241,8 @@ public class MigrationExample {
         r.addCommandParser(CommandName.name("HPEXPIREAT"), new DefaultCommandParser());
         r.addCommandParser(CommandName.name("HPERSIST"), new DefaultCommandParser());
         // since redis 8.2
-        r.addCommandParser(CommandName.name("XACKDEL"), new XAckDelParser());
-        r.addCommandParser(CommandName.name("XDELEX"), new XDelExParser());
+        r.addCommandParser(CommandName.name("XACKDEL"), new DefaultCommandParser());
+        r.addCommandParser(CommandName.name("XDELEX"), new DefaultCommandParser());
         return r;
     }
 
