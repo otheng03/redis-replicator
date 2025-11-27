@@ -94,7 +94,7 @@ Redis Replicator is an implementation of the Redis Replication protocol written 
 <dependency>
     <groupId>com.moilioncircle</groupId>
     <artifactId>redis-replicator</artifactId>
-    <version>3.10.0</version>
+    <version>3.10.1</version>
 </dependency>
 ```
 

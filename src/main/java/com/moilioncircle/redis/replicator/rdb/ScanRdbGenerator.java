@@ -54,7 +54,7 @@ public class ScanRdbGenerator {
     private final CRCOutputStream out;
     private final Configuration configuration;
     
-    private static Map<String, Integer> VERSIONS = new HashMap<>();
+    private static final Map<String, Integer> VERSIONS = new HashMap<>();
     
     static {
         VERSIONS.put("2.6", 6);
@@ -69,6 +69,7 @@ public class ScanRdbGenerator {
         VERSIONS.put("7.2", 11);
         VERSIONS.put("7.4", RDB_VERSION);
         VERSIONS.put("8.0", RDB_VERSION);
+        VERSIONS.put("8.2", RDB_VERSION);
     }
     
     public ScanRdbGenerator(String host, int port, Configuration configuration, OutputStream out) {
@@ -113,8 +114,7 @@ public class ScanRdbGenerator {
                         
                         version = VERSIONS.get(val);
                     } else if (key.equals("arch_bits")) {
-                        String val = kv[1];
-                        bits = val;
+                        bits = kv[1];
                     }
                 }
             }
@@ -185,7 +185,7 @@ public class ScanRdbGenerator {
             for (int i = 1; i < line.length; i++) {
                 // db{dbnum}:keys={dbsize},expires={expires},avg_ttl=0
                 String[] ary = line[i].split(":");
-                Integer dbnum = Integer.parseInt(ary[0].substring(2));
+                int dbnum = Integer.parseInt(ary[0].substring(2));
                 ary = ary[1].split(",");
                 long dbsize = Long.parseLong(ary[0].split("=")[1]);
                 long expires = Long.parseLong(ary[1].split("=")[1]);
@@ -258,8 +258,8 @@ public class ScanRdbGenerator {
             RESP2Client.Command command = retry(client -> {
                 RESP2Client.Command r = client.newCommand();
                 RESP2.Node[] nodes = ary[1].getArray();
-                for (int i = 0; i < nodes.length; i++) {
-                    byte[] key = nodes[i].getBytes().first();
+                for (RESP2.Node node : nodes) {
+                    byte[] key = node.getBytes().first();
                     if (version >= 10) {
                         PExpireTimeNodeConsumer context = new PExpireTimeNodeConsumer();
                         r.post(context, "pexpiretime".getBytes(), key);
@@ -324,10 +324,10 @@ public class ScanRdbGenerator {
     
     private static class DumpNodeConsumer implements RESP2Client.NodeConsumer {
         
-        private byte[] key;
-        private OutputStream out;
-        private TTLContext context;
-        private BaseRdbEncoder encoder = new BaseRdbEncoder();
+        private final byte[] key;
+        private final OutputStream out;
+        private final TTLContext context;
+        private final BaseRdbEncoder encoder = new BaseRdbEncoder();
         
         public DumpNodeConsumer(byte[] key, OutputStream out, TTLContext context) {
             this.key = key;
@@ -413,7 +413,7 @@ public class ScanRdbGenerator {
         if (client != null) {
             try {
                 client.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
     }

@@ -66,10 +66,17 @@ public class DumpRdbVisitor extends DefaultRdbVisitor {
 
     /**
      * @param replicator the replicator
-     * @param version    dumped version : redis 2.8.x = 6, redis 3.x = 7, redis 4.0.x = 8, redis 5.0+ = 9. 
+     * @param version    dumped version :
+     *                       redis 2.8.x = 6
+     *                       redis 3.x = 7
+     *                       redis 4.0.x = 8
+     *                       redis 5.0 ~ 6.2 = 9
+     *                       redis 7.0 = 10
+     *                       redis 7.2 = 11
+     *                       redis 7.4 ~ 8.2 = 12
      *                   -1 means dumped version = rdb version
      * @since 2.6.0
-     */
+     */ 
     public DumpRdbVisitor(Replicator replicator, int version) {
         this(replicator, version, 8192);
     }

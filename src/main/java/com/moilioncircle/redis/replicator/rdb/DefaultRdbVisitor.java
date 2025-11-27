@@ -113,7 +113,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
     public int applyVersion(RedisInputStream in) throws IOException {
         int version = parseInt(BaseRdbParser.StringHelper.str(in, 4));
         if (version < 2 || version > RDB_VERSION) {
-            throw new UnsupportedOperationException(String.valueOf("can't handle RDB format version " + version));
+            throw new UnsupportedOperationException("can't handle RDB format version " + version);
         }
         return version;
     }
@@ -644,7 +644,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
                 return (KeyValuePair<?, ?>) applyStreamListPacks2(in, version, context);
             case RDB_TYPE_STREAM_LISTPACKS_3:
                 return (KeyValuePair<?, ?>) applyStreamListPacks3(in, version, context);
-            case RDB_TYPE_HASH_LISTPACK_EX:
+            case RDB_TYPE_HASH_LISTPACK_EX: 
                 return (KeyValuePair<?, ?>) applyHashListPackEx(in, version, context);
             case RDB_TYPE_HASH_METADATA:
                 return (KeyValuePair<?, ?>) applyHashMetadata(in, version, context);
