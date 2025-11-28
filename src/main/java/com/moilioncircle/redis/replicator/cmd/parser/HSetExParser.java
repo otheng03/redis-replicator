@@ -30,7 +30,7 @@ import com.moilioncircle.redis.replicator.rdb.datatype.ExpiredType;
  * @author Leon Chen
  * @since 3.9.0
  */
-public class HSetExParser  implements CommandParser<HSetExCommand> {
+public class HSetExParser implements CommandParser<HSetExCommand> {
     
     @Override
     public HSetExCommand parse(Object[] command) {

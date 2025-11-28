@@ -69,6 +69,7 @@ import com.moilioncircle.redis.replicator.cmd.parser.LPushXParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LRemParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.LTrimParser;
+import com.moilioncircle.redis.replicator.cmd.parser.MSetExParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetNxParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MSetParser;
 import com.moilioncircle.redis.replicator.cmd.parser.MoveParser;
@@ -341,6 +342,8 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
         // since redis 8.2
         addCommandParser(CommandName.name("XACKDEL"), new XAckDelParser());
         addCommandParser(CommandName.name("XDELEX"), new XDelExParser());
+        // since redis 8.4
+        addCommandParser(CommandName.name("MSETEX"), new MSetExParser());
     }
     
     @Override

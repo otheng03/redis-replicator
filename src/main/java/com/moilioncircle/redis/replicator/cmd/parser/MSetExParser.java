@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 Leon Chen
+ * Copyright 2016-2024 Leon Chen
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,33 +21,37 @@ import static com.moilioncircle.redis.replicator.cmd.CommandParsers.toRune;
 import static com.moilioncircle.redis.replicator.util.Strings.isEquals;
 
 import com.moilioncircle.redis.replicator.cmd.CommandParser;
-import com.moilioncircle.redis.replicator.cmd.impl.Condition;
 import com.moilioncircle.redis.replicator.cmd.impl.ExistType;
-import com.moilioncircle.redis.replicator.cmd.impl.SetCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.When;
+import com.moilioncircle.redis.replicator.cmd.impl.MSetExCommand;
 import com.moilioncircle.redis.replicator.cmd.impl.XATType;
 import com.moilioncircle.redis.replicator.rdb.datatype.ExpiredType;
+import com.moilioncircle.redis.replicator.util.ByteArrayMap;
 
 /**
  * @author Leon Chen
- * @since 2.1.0
+ * @since 3.11.0
  */
-public class SetParser implements CommandParser<SetCommand> {
+public class MSetExParser implements CommandParser<MSetExCommand> {
 
     @Override
-    public SetCommand parse(Object[] command) {
-        byte[] key = toBytes(command[1]);
-        byte[] value = toBytes(command[2]);
-        int idx = 3;
+    public MSetExCommand parse(Object[] command) {
+        int numKeys = Integer.parseInt(toRune(command[1]));
+        int idx = 2;
+        ByteArrayMap kv = new ByteArrayMap();
+        for (int i = 0; i < numKeys; i++) {
+            byte[] key = toBytes(command[idx++]);
+            byte[] value = toBytes(command[idx++]);
+            kv.put(key, value);
+        }
+
         ExistType existType = ExistType.NONE;
         Long expiredValue = null;
         XATType xatType = XATType.NONE;
         Long xatValue = null;
         boolean et = false, st = false;
         boolean keepTtl = false;
-        boolean get = false;
-        Condition condition = null;
         ExpiredType expiredType = ExpiredType.NONE;
+
         while (idx < command.length) {
             String param = toRune(command[idx++]);
             if (!et && isEquals(param, "NX")) {
@@ -56,24 +60,6 @@ public class SetParser implements CommandParser<SetCommand> {
             } else if (!et && isEquals(param, "XX")) {
                 existType = ExistType.XX;
                 et = true;
-            } else if (!et && isEquals(param, "IFEQ")) {
-                byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFEQ, conVal);
-                et = true;
-            } else if (!et && isEquals(param, "IFNE")) {
-                byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFNE, conVal);
-                et = true;
-            } else if (!et && isEquals(param, "IFDEQ")) {
-                byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFDEQ, conVal);
-                et = true;
-            } else if (!et && isEquals(param, "IFDNE")) {
-                byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFDNE, conVal);
-                et = true;
-            } else if (isEquals(param, "GET")) {
-                get = true;
             }
 
             if (!st && isEquals(param, "EX")) {
@@ -94,9 +80,10 @@ public class SetParser implements CommandParser<SetCommand> {
                 st = true;
             } else if (!st && isEquals(param, "KEEPTTL")) {
                 keepTtl = true;
+                st = true;
             }
         }
-        return new SetCommand(key, value, keepTtl, expiredType, expiredValue, xatType, xatValue, existType, get, condition);
-    }
 
+        return new MSetExCommand(kv, keepTtl, expiredType, expiredValue, xatType, xatValue, existType);
+    }
 }
