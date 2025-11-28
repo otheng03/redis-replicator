@@ -37,11 +37,11 @@ public class MSetExParserTest extends AbstractParserTest {
         {
             MSetExParser parser = new MSetExParser();
             MSetExCommand command = parser.parse(toObjectArray("msetex 2 k1 v1 k2 v2 nx ex 100".split(" ")));
-            assertEquals(2, command.getKeyValues().size());
-            assertTrue(command.getKeyValues().containsKey("k1".getBytes()));
-            assertTrue(command.getKeyValues().containsKey("k2".getBytes()));
-            assertEquals("v1", command.getKeyValues().get("k1".getBytes()));
-            assertEquals("v2", command.getKeyValues().get("k2".getBytes()));
+            assertEquals(2, command.getKv().size());
+            assertTrue(command.getKv().containsKey("k1".getBytes()));
+            assertTrue(command.getKv().containsKey("k2".getBytes()));
+            assertEquals("v1", command.getKv().get("k1".getBytes()));
+            assertEquals("v2", command.getKv().get("k2".getBytes()));
             TestCase.assertEquals(ExpiredType.SECOND, command.getExpiredType());
             assertEquals(100L, command.getExpiredValue());
             TestCase.assertEquals(ExistType.NX, command.getExistType());
@@ -50,9 +50,9 @@ public class MSetExParserTest extends AbstractParserTest {
         {
             MSetExParser parser = new MSetExParser();
             MSetExCommand command = parser.parse(toObjectArray("msetex 1 k1 v1 nx keepttl".split(" ")));
-            assertEquals(1, command.getKeyValues().size());
-            assertTrue(command.getKeyValues().containsKey("k1".getBytes()));
-            assertEquals("v1", command.getKeyValues().get("k1".getBytes()));
+            assertEquals(1, command.getKv().size());
+            assertTrue(command.getKv().containsKey("k1".getBytes()));
+            assertEquals("v1", command.getKv().get("k1".getBytes()));
             TestCase.assertTrue(command.isKeepTtl());
         }
     }
