@@ -26,23 +26,23 @@ public class Condition implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private When when;
+	private Operator operator;
 	private byte[] value;
 	
 	public Condition() {
 	}
 	
-	public Condition(When when, byte[] value) {
-		this.when = when;
+	public Condition(Operator operator, byte[] value) {
+		this.operator = operator;
 		this.value = value;
 	}
 	
-	public When getWhen() {
-		return when;
+	public Operator getOperator() {
+		return operator;
 	}
 	
-	public void setWhen(When when) {
-		this.when = when;
+	public void setOperator(Operator operator) {
+		this.operator = operator;
 	}
 	
 	public byte[] getValue() {

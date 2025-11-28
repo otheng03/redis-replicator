@@ -20,6 +20,6 @@ package com.moilioncircle.redis.replicator.cmd.impl;
  * @author Leon Chen
  * @since 3.11.0
  */
-public enum When {
+public enum Operator {
     IFEQ, IFNE, IFDEQ, IFDNE
 }

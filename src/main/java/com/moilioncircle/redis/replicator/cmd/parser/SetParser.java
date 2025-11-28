@@ -24,7 +24,7 @@ import com.moilioncircle.redis.replicator.cmd.CommandParser;
 import com.moilioncircle.redis.replicator.cmd.impl.Condition;
 import com.moilioncircle.redis.replicator.cmd.impl.ExistType;
 import com.moilioncircle.redis.replicator.cmd.impl.SetCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.When;
+import com.moilioncircle.redis.replicator.cmd.impl.Operator;
 import com.moilioncircle.redis.replicator.cmd.impl.XATType;
 import com.moilioncircle.redis.replicator.rdb.datatype.ExpiredType;
 
@@ -58,19 +58,19 @@ public class SetParser implements CommandParser<SetCommand> {
                 et = true;
             } else if (!et && isEquals(param, "IFEQ")) {
                 byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFEQ, conVal);
+                condition = new Condition(Operator.IFEQ, conVal);
                 et = true;
             } else if (!et && isEquals(param, "IFNE")) {
                 byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFNE, conVal);
+                condition = new Condition(Operator.IFNE, conVal);
                 et = true;
             } else if (!et && isEquals(param, "IFDEQ")) {
                 byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFDEQ, conVal);
+                condition = new Condition(Operator.IFDEQ, conVal);
                 et = true;
             } else if (!et && isEquals(param, "IFDNE")) {
                 byte[] conVal = toBytes(command[idx++]);
-                condition = new Condition(When.IFDNE, conVal);
+                condition = new Condition(Operator.IFDNE, conVal);
                 et = true;
             } else if (isEquals(param, "GET")) {
                 get = true;
