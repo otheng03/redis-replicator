@@ -94,7 +94,7 @@ Redis Replicator is an implementation of the Redis Replication protocol written 
 <dependency>
     <groupId>com.moilioncircle</groupId>
     <artifactId>redis-replicator</artifactId>
-    <version>3.10.1</version>
+    <version>3.11.0</version>
 </dependency>
 ```
 
@@ -463,7 +463,7 @@ Replicator replicator = new RedisReplicator("rediss://user:pass@127.0.0.1:6379?r
 | **EVALSHA**  | **ZPOPMAX**    | **ZPOPMIN**        | **XACK**     | **XADD**      | **XCLAIM**           |
 | **XDEL**     | **XGROUP**     | **XTRIM**          | **XSETID**   | **COPY**      | **LMOVE**            |
 | **BLMOVE**   | **ZDIFFSTORE** | **GEOSEARCHSTORE** | **FUNCTION** | **SPUBLISH**  | **HPERSIST**         |
-| **HSETEX**   | **HPEXPIREAT** | **XACKDEL**        | **XDELEX**   |               |                      |
+| **HSETEX**   | **HPEXPIREAT** | **XACKDEL**        | **XDELEX**   | **MSETEX**    |                      |
 
 ## 5.2. EOFException
 

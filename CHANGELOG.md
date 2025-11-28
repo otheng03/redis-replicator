@@ -1,3 +1,10 @@
+### 3.11.0
+
+Support for redis 8.4.x.
+
+AOF
+1. Add support for `MSETEX` command.
+
 ### 3.10.0
 
 Support for redis 8.2.x.  
