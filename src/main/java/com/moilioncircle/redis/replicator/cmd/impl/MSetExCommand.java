@@ -30,7 +30,7 @@ public class MSetExCommand extends AbstractCommand {
 
     private static final long serialVersionUID = 1L;
 
-    private Map<byte[], byte[]> kv;
+    private Map<byte[], byte[]> keyValues;
     private boolean keepTtl;
     private ExpiredType expiredType;
     private Long expiredValue;
@@ -41,8 +41,8 @@ public class MSetExCommand extends AbstractCommand {
     public MSetExCommand() {
     }
 
-    public MSetExCommand(Map<byte[], byte[]> kv, boolean keepTtl, ExpiredType expiredType, Long expiredValue, XATType xatType, Long xatValue, ExistType existType) {
-        this.kv = kv;
+    public MSetExCommand(Map<byte[], byte[]> keyValues, boolean keepTtl, ExpiredType expiredType, Long expiredValue, XATType xatType, Long xatValue, ExistType existType) {
+        this.keyValues = keyValues;
         this.keepTtl = keepTtl;
         this.expiredType = expiredType;
         this.expiredValue = expiredValue;
@@ -51,12 +51,12 @@ public class MSetExCommand extends AbstractCommand {
         this.existType = existType;
     }
 
-    public Map<byte[], byte[]> getKv() {
-        return kv;
+    public Map<byte[], byte[]> getKeyValues() {
+        return keyValues;
     }
 
-    public void setKv(Map<byte[], byte[]> kv) {
-        this.kv = kv;
+    public void setKeyValues(Map<byte[], byte[]> keyValues) {
+        this.keyValues = keyValues;
     }
 
     public boolean isKeepTtl() {
