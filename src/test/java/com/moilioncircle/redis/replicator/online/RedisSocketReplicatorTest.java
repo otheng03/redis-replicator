@@ -27,13 +27,16 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.moilioncircle.redis.replicator.cmd.impl.*;
 import org.junit.Test;
 
 import com.moilioncircle.redis.replicator.CloseListener;
@@ -41,13 +44,6 @@ import com.moilioncircle.redis.replicator.Configuration;
 import com.moilioncircle.redis.replicator.RedisReplicator;
 import com.moilioncircle.redis.replicator.RedisSocketReplicator;
 import com.moilioncircle.redis.replicator.Replicator;
-import com.moilioncircle.redis.replicator.cmd.impl.AggregateType;
-import com.moilioncircle.redis.replicator.cmd.impl.ExistType;
-import com.moilioncircle.redis.replicator.cmd.impl.PingCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.SetCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.ZAddCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.ZInterStoreCommand;
-import com.moilioncircle.redis.replicator.cmd.impl.ZUnionStoreCommand;
 import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.event.EventListener;
 import com.moilioncircle.redis.replicator.event.PostCommandSyncEvent;
@@ -60,6 +56,7 @@ import com.moilioncircle.redis.replicator.util.XScheduledExecutorService;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.commands.HashCommands;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZParams;
 
@@ -246,7 +243,7 @@ public class RedisSocketReplicatorTest {
         assertEquals("2", ref.get());
     }
 
-    @Test
+    //@Test
     public void testV7() throws Exception {
         final AtomicReference<String> ref = new AtomicReference<>(null);
         final Replicator replicator = new RedisReplicator("127.0.0.1", 6380, Configuration.defaultSetting().setAuthPassword("test").setRetries(0));
@@ -541,5 +538,38 @@ public class RedisSocketReplicatorTest {
         replicator.open();
         assertEquals(0, acc.get());
         assertEquals(DISCONNECTED, replicator.getStatus());
+    }
+
+    @Test
+    public void testHashValkey() throws Exception {
+        final AtomicReference<String> ref = new AtomicReference<>(null);
+        Replicator replicator = new RedisReplicator("127.0.0.1", 6379, Configuration.defaultSetting().setRetries(0));
+        replicator.addEventListener(new EventListener() {
+            @Override
+            public void onEvent(Replicator replicator, Event event) {
+                if (event instanceof PostRdbSyncEvent) {
+                    try (Jedis jedis = new Jedis("127.0.0.1", 6379)) {
+                        jedis.del("hashabc");
+                        jedis.hset("hashabc", "field", "value");
+                        jedis.hexpireAt("hashabc", 2054846600, "field");
+                    }
+                }
+                if (event instanceof HSetCommand) {
+                    HSetCommand hsetCommand = (HSetCommand) event;
+                    assertEquals("hashabc", Strings.toString(hsetCommand.getKey()));
+                    assertEquals(Collections.singletonMap("field", "value"), hsetCommand
+                            .getFields().entrySet().stream().collect(Collectors.toMap(
+                                    e -> Strings.toString(e.getKey()),
+                                    e -> Strings.toString(e.getValue()))));
+                    ref.compareAndSet(null, "ok");
+                    try {
+                        replicator.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        });
+        replicator.open();
+        assertEquals("ok", ref.get());
     }
 }

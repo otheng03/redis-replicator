@@ -19,6 +19,7 @@ package com.moilioncircle.redis.replicator.rdb;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_FREQ;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_IDLE;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_2;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK_EX;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_METADATA;
@@ -102,8 +103,8 @@ public class DefaultRdbVisitor extends RdbVisitor {
 
     @Override
     public String applyMagic(RedisInputStream in) throws IOException {
-        String magic = BaseRdbParser.StringHelper.str(in, 5);//REDIS
-        if (!magic.equals("REDIS")) {
+        String magic = BaseRdbParser.StringHelper.str(in, 6);//REDIS
+        if (!magic.equals("VALKEY")) {
             throw new UnsupportedOperationException("can't read MAGIC STRING [REDIS] ,value:" + magic);
         }
         return magic;
@@ -111,7 +112,11 @@ public class DefaultRdbVisitor extends RdbVisitor {
 
     @Override
     public int applyVersion(RedisInputStream in) throws IOException {
-        int version = parseInt(BaseRdbParser.StringHelper.str(in, 4));
+        String s = BaseRdbParser.StringHelper.str(in, 3);
+        int version = parseInt(s);
+        if (version > 79) { // VALKEY
+            return version;
+        }
         if (version < 2 || version > RDB_VERSION) {
             throw new UnsupportedOperationException("can't handle RDB format version " + version);
         }
@@ -512,14 +517,27 @@ public class DefaultRdbVisitor extends RdbVisitor {
         BaseRdbParser parser = new BaseRdbParser(in);
         KeyValuePair<byte[], Map<byte[], TTLValue>> o25 = new KeyStringValueTTLHash();
         byte[] key = parser.rdbLoadEncodedStringObject().first();
-        
+
         TTLByteArrayMap map = valueVisitor.applyHashListPackEx(in, version);
         o25.setValueRdbType(RDB_TYPE_HASH_LISTPACK_EX);
         o25.setValue(map);
         o25.setKey(key);
         return context.valueOf(o25);
     }
-    
+
+    @Override
+    public Event applyHash2(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+        KeyValuePair<byte[], Map<byte[], TTLValue>> o22 = new KeyStringValueTTLHash();
+        byte[] key = parser.rdbLoadEncodedStringObject().first();
+
+        TTLByteArrayMap map = valueVisitor.applyHash2(in, version);
+        o22.setValueRdbType(RDB_TYPE_HASH_2);
+        o22.setValue(map);
+        o22.setKey(key);
+        return context.valueOf(o22);
+    }
+
     @Override
     public Event applyModule(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
         BaseRdbParser parser = new BaseRdbParser(in);
@@ -644,10 +662,12 @@ public class DefaultRdbVisitor extends RdbVisitor {
                 return (KeyValuePair<?, ?>) applyStreamListPacks2(in, version, context);
             case RDB_TYPE_STREAM_LISTPACKS_3:
                 return (KeyValuePair<?, ?>) applyStreamListPacks3(in, version, context);
-            case RDB_TYPE_HASH_LISTPACK_EX: 
+            case RDB_TYPE_HASH_LISTPACK_EX:
                 return (KeyValuePair<?, ?>) applyHashListPackEx(in, version, context);
             case RDB_TYPE_HASH_METADATA:
                 return (KeyValuePair<?, ?>) applyHashMetadata(in, version, context);
+            case RDB_TYPE_HASH_2:
+                return (KeyValuePair<?, ?>) applyHash2(in, version, context);
             default:
                 throw new AssertionError("unexpected value type:" + valueType);
         }

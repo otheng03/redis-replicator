@@ -559,7 +559,7 @@ public class ValueIterableRdbValueVisitor extends DefaultRdbValueVisitor {
                     throw new UncheckedIOException(e);
                 }
             }
-            
+
             @Override
             public Map.Entry<byte[], TTLValue> next() {
                 try {
@@ -570,6 +570,39 @@ public class ValueIterableRdbValueVisitor extends DefaultRdbValueVisitor {
                     long ttl = Long.parseLong(Strings.toString(listPackEntry(listPack)));
                     condition--;
                     return new AbstractMap.SimpleEntry<>(field, new TTLValue(ttl != 0 ? ttl : null, value));
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        };
+        return (T) val;
+    }
+
+    @Override
+    public <T> T applyHash2(RedisInputStream in, int version) throws IOException {
+        /*
+         * RDB_TYPE_HASH_2: Hash with field-level expiration (Valkey 9.0)
+         * Format: len + (field, value, expiry)*len
+         * expiry is 8 bytes signed int64 (little endian), -1 means no expiry
+         */
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long len = parser.rdbLoadLen().len;
+        Iterator<Map.Entry<byte[], TTLValue>> val = new Iter<Map.Entry<byte[], TTLValue>>(len, parser) {
+            @Override
+            public boolean hasNext() {
+                return condition > 0;
+            }
+
+            @Override
+            public Map.Entry<byte[], TTLValue> next() {
+                try {
+                    byte[] field = parser.rdbLoadEncodedStringObject().first();
+                    byte[] value = parser.rdbLoadEncodedStringObject().first();
+                    long expiry = parser.rdbLoadMillisecondTime();
+                    condition--;
+                    // expiry < 0 (e.g., -1) means no expiration
+                    return new AbstractMap.SimpleEntry<>(field, new TTLValue(expiry >= 0 ? expiry : null, value));
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }

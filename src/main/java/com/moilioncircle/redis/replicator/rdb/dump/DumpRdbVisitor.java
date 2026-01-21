@@ -17,6 +17,7 @@
 package com.moilioncircle.redis.replicator.rdb.dump;
 
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_2;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK_EX;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_METADATA;
@@ -333,6 +334,23 @@ public class DumpRdbVisitor extends DefaultRdbVisitor {
         o25.setKey(key);
         o25.setValue(valueVisitor.applyHashListPackEx(in, version));
         return context.valueOf(o25);
+    }
+
+    @Override
+    public Event applyHash2(RedisInputStream in, int version, ContextKeyValuePair context) throws IOException {
+        BaseRdbParser parser = new BaseRdbParser(in);
+        KeyValuePair<byte[], byte[]> o22 = new DumpKeyValuePair();
+        byte[] key = parser.rdbLoadEncodedStringObject().first();
+        // RDB_TYPE_HASH_2 is Valkey 9.0 specific (RDB version 80)
+        // For compatibility with older versions, fallback to RDB_TYPE_HASH
+        if (this.version != -1 && this.version < 80) {
+            o22.setValueRdbType(RDB_TYPE_HASH);
+        } else {
+            o22.setValueRdbType(RDB_TYPE_HASH_2);
+        }
+        o22.setKey(key);
+        o22.setValue(valueVisitor.applyHash2(in, version));
+        return context.valueOf(o22);
     }
 
     @Override

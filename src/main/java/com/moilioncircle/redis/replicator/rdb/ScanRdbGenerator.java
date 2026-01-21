@@ -123,7 +123,7 @@ public class ScanRdbGenerator {
             /*
              * version
              */
-            out.write("REDIS".getBytes());
+            out.write("VALKEY".getBytes());
             out.write(lappend(version, 4, '0').getBytes());
             
             /*

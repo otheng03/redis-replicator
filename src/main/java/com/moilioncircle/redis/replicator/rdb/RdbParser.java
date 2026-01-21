@@ -29,6 +29,7 @@ import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_RESIZEDB;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_SELECTDB;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_SLOT_INFO;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH;
+import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_2;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_LISTPACK_EX;
 import static com.moilioncircle.redis.replicator.Constants.RDB_TYPE_HASH_METADATA;
@@ -301,6 +302,9 @@ public class RdbParser {
                     break;
                 case RDB_TYPE_HASH_LISTPACK_EX:
                     event = rdbVisitor.applyHashListPackEx(in, version, kv);
+                    break;
+                case RDB_TYPE_HASH_2:
+                    event = rdbVisitor.applyHash2(in, version, kv);
                     break;
                 default:
                     throw new AssertionError("unexpected value type:" + type + ", check your ModuleParser or ValueIterableRdbVisitor.");

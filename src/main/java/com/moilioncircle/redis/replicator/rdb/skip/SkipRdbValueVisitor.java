@@ -220,7 +220,20 @@ public class SkipRdbValueVisitor extends DefaultRdbValueVisitor {
         skip.rdbLoadPlainStringObject();
         return null;
     }
-    
+
+    @Override
+    public <T> T applyHash2(RedisInputStream in, int version) throws IOException {
+        SkipRdbParser skip = new SkipRdbParser(in);
+        long len = skip.rdbLoadLen().len;
+        while (len > 0) {
+            skip.rdbLoadEncodedStringObject();
+            skip.rdbLoadEncodedStringObject();
+            skip.rdbLoadMillisecondTime();
+            len--;
+        }
+        return null;
+    }
+
     @Override
     public <T> T applyModule(RedisInputStream in, int version) throws IOException {
         SkipRdbParser skip = new SkipRdbParser(in);

@@ -483,6 +483,28 @@ public class DefaultRdbValueVisitor extends RdbValueVisitor {
     }
 
     @Override
+    public <T> T applyHash2(RedisInputStream in, int version) throws IOException {
+        /*
+         * RDB_TYPE_HASH_2: Hash with field-level expiration (Valkey 9.0)
+         * Format: len + (field, value, expiry)*len
+         * expiry is 8 bytes signed int64 (little endian), -1 means no expiry
+         */
+        BaseRdbParser parser = new BaseRdbParser(in);
+
+        long len = parser.rdbLoadLen().len;
+        TTLByteArrayMap map = new TTLByteArrayMap();
+        while (len > 0) {
+            byte[] field = parser.rdbLoadEncodedStringObject().first();
+            byte[] value = parser.rdbLoadEncodedStringObject().first();
+            long expiry = parser.rdbLoadMillisecondTime();
+            // expiry < 0 (e.g., -1) means no expiration
+            map.put(field, new TTLValue(expiry >= 0 ? expiry : null, value));
+            len--;
+        }
+        return (T) map;
+    }
+
+    @Override
     public <T> T applyModule(RedisInputStream in, int version) throws IOException {
         //|6|6|6|6|6|6|6|6|6|10|
         BaseRdbParser parser = new BaseRdbParser(in);
