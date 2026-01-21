@@ -551,7 +551,7 @@ public class RedisSocketReplicatorTest {
                     try (Jedis jedis = new Jedis("127.0.0.1", 6379)) {
                         jedis.del("hashabc");
                         jedis.hset("hashabc", "field", "value");
-                        jedis.hexpireAt("hashabc", 2054846600, "field");
+                        jedis.hpexpireAt("hashabc", 2054846600000L, "field");
                     }
                 }
                 if (event instanceof HSetCommand) {
@@ -561,7 +561,14 @@ public class RedisSocketReplicatorTest {
                             .getFields().entrySet().stream().collect(Collectors.toMap(
                                     e -> Strings.toString(e.getKey()),
                                     e -> Strings.toString(e.getValue()))));
-                    ref.compareAndSet(null, "ok");
+                    ref.compareAndSet(null, "hset");
+                }
+                if (event instanceof HPExpireAtCommand) {
+                    HPExpireAtCommand hpExpireAtCommand = (HPExpireAtCommand) event;
+                    assertEquals("hashabc", Strings.toString(hpExpireAtCommand.getKey()));
+                    assertEquals("field", Strings.toString(hpExpireAtCommand.getFields()[0]));
+                    assertEquals(2054846600000L, hpExpireAtCommand.getEx());
+                    ref.compareAndSet("hset", "ok");
                     try {
                         replicator.close();
                     } catch (IOException e) {
