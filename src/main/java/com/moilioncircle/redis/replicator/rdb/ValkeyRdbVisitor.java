@@ -16,6 +16,7 @@
 
 package com.moilioncircle.redis.replicator.rdb;
 
+import static com.moilioncircle.redis.replicator.Constants.VALKEY_VERSION;
 import static java.lang.Integer.parseInt;
 
 import java.io.IOException;
@@ -53,18 +54,14 @@ public class ValkeyRdbVisitor extends RdbVisitor {
 
     @Override
     public String applyMagic(RedisInputStream in) throws IOException {
-        String magic = BaseRdbParser.StringHelper.str(in, 6); // "VALKEY"
-        if (!magic.equals("VALKEY")) {
-            throw new UnsupportedOperationException("can't read MAGIC STRING [VALKEY], value: " + magic);
-        }
-        return magic;
+        return visitor.applyMagic(in);
     }
 
     @Override
     public int applyVersion(RedisInputStream in) throws IOException {
         // Valkey uses a 3-byte ASCII version string: "080" = 80, "090" = 90, ...
         int version = parseInt(BaseRdbParser.StringHelper.str(in, 3));
-        if (version < 80) {
+        if (version < VALKEY_VERSION) {
             throw new UnsupportedOperationException("can't handle Valkey RDB format version " + version);
         }
         return version;

@@ -21,18 +21,15 @@ import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_EOF;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_EXPIRETIME_MS;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_RESIZEDB;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_SELECTDB;
-import static com.moilioncircle.redis.replicator.Constants.RDB_VERSION;
-import static com.moilioncircle.redis.replicator.util.Strings.lappend;
 
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Queue;
 
 import com.moilioncircle.redis.replicator.Configuration;
+import com.moilioncircle.redis.replicator.Flavor;
 import com.moilioncircle.redis.replicator.client.RESP2;
 import com.moilioncircle.redis.replicator.client.RESP2Client;
 import com.moilioncircle.redis.replicator.io.CRCOutputStream;
@@ -54,25 +51,6 @@ public class ScanRdbGenerator {
     private final CRCOutputStream out;
     private final Configuration configuration;
     
-    private static final Map<String, Integer> VERSIONS = new HashMap<>();
-    
-    static {
-        VERSIONS.put("2.6", 6);
-        VERSIONS.put("2.8", 6);
-        VERSIONS.put("3.0", 6);
-        VERSIONS.put("3.2", 7);
-        VERSIONS.put("4.0", 8);
-        VERSIONS.put("5.0", 9);
-        VERSIONS.put("6.0", 9);
-        VERSIONS.put("6.2", 9);
-        VERSIONS.put("7.0", 10);
-        VERSIONS.put("7.2", 11);
-        VERSIONS.put("7.4", RDB_VERSION);
-        VERSIONS.put("8.0", RDB_VERSION);
-        VERSIONS.put("8.2", RDB_VERSION);
-        VERSIONS.put("8.4", RDB_VERSION);
-    }
-    
     public ScanRdbGenerator(String host, int port, Configuration configuration, OutputStream out) {
         this.host = host;
         this.port = port;
@@ -81,6 +59,7 @@ public class ScanRdbGenerator {
     }
     
     public void generate() throws IOException {
+        Flavor flavor = configuration.getFlavor();
         try {
             this.client = new RESP2Client(host, port, configuration);
             /*
@@ -109,11 +88,7 @@ public class ScanRdbGenerator {
                         ver = val;
                         
                         val = val.substring(0, val.lastIndexOf('.'));
-                        if (!VERSIONS.containsKey(val)) {
-                            throw new AssertionError("unsupported redis version :" + val);
-                        }
-                        
-                        version = VERSIONS.get(val);
+                        version = flavor.getRdbVersion(val);
                     } else if (key.equals("arch_bits")) {
                         bits = kv[1];
                     }
@@ -123,8 +98,8 @@ public class ScanRdbGenerator {
             /*
              * version
              */
-            out.write("REDIS".getBytes());
-            out.write(lappend(version, 4, '0').getBytes());
+            out.write(flavor.getMagic().getBytes());
+            out.write(flavor.convertToRdbVersion(version).getBytes());
             
             /*
              * aux

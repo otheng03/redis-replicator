@@ -102,11 +102,12 @@ public class DefaultRdbVisitor extends RdbVisitor {
 
     @Override
     public String applyMagic(RedisInputStream in) throws IOException {
-        String magic = BaseRdbParser.StringHelper.str(in, 5);//REDIS
-        if (!magic.equals("REDIS")) {
-            throw new UnsupportedOperationException("can't read MAGIC STRING [REDIS] ,value:" + magic);
+        String m1 = replicator.getConfiguration().getFlavor().getMagic();
+        String m2 = BaseRdbParser.StringHelper.str(in, m1.length());
+        if (!m2.equals(m1)) {
+            throw new UnsupportedOperationException("can't read MAGIC STRING [" + m1 + "] ,value:" + m2);
         }
-        return magic;
+        return m2;
     }
 
     @Override

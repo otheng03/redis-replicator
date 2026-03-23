@@ -51,13 +51,18 @@
             </roles>
             <timezone>+8</timezone>
         </developer>
-
+        
         <developer>
             <name>Adrian Yao</name>
             <organization>unstudy</organization>
             <email>adrianyaofly@gmail.com</email>
             <url>https://github.com/adrianyao89</url>
             <timezone>+8</timezone>
+        </developer>
+        
+        <developer>
+            <name>otheng03</name>
+            <url>https://github.com/otheng03</url>
         </developer>
 
         <developer>

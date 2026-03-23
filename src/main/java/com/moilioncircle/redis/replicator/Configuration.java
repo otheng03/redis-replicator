@@ -531,6 +531,10 @@ public class Configuration {
         if (parameters.containsKey("replOffset")) {
             configuration.setReplOffset(getLong(parameters.get("replOffset"), -1L));
         }
+        
+        if (parameters.containsKey("flavor")) {
+            configuration.setFlavor(Flavor.toFlavor(parameters.get("flavor")));
+        }
     
         // scan
         if (parameters.containsKey("enableScan")) {
@@ -613,6 +617,7 @@ public class Configuration {
                 ", replStreamDB=" + replStreamDB +
                 ", replOffset=" + replOffset +
                 ", replFilters=" + Arrays.toString(replFilters) +
+                ", flavor=" + flavor +
                 '}';
     }
 }
