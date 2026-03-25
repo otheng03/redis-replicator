@@ -23,59 +23,65 @@ import static com.moilioncircle.redis.replicator.util.Strings.lappend;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.moilioncircle.redis.replicator.rdb.DefaultRdbVisitor;
+import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
+import com.moilioncircle.redis.replicator.rdb.ValkeyRdbVisitor;
+
 /**
  * @since 3.12.0
  */
-public enum Flavor {
-    REDIS("REDIS"), VALKEY("VALKEY");
-    
-    private String magic;
-    
-    Flavor(String magic) {
-        this.magic = magic;
-    }
-    
-    public String getMagic() {
-        return magic;
-    }
-    
-    public String convertToRdbVersion(int rdbVer) {
-        if (this == REDIS) {
-            return lappend(rdbVer, 4, '0');
-        } else if (this == VALKEY) {
-            return lappend(rdbVer, 3, '0');
-        } else {
-            throw ERROR;
+public enum Flavor implements FlavorSupport {
+    REDIS {
+        @Override
+        public String magic() {
+            return "REDIS";
         }
-    }
-    
-    public int getRdbVersion(String version) {
-        if (this == REDIS) {
-            if (!REDIS_VERSIONS.containsKey(version)) {
-                throw new AssertionError("unsupported redis version :" + version);
-            }
+        
+        @Override
+        public String formatRdbVersion(int version) {
+            return lappend(version, 4, '0');
+        }
+        
+        @Override
+        public int resolveRdbVersion(String version) {
             return REDIS_VERSIONS.get(version);
-        } else if (this == VALKEY) {
-            if (!VALKEY_VERSIONS.containsKey(version)) {
-                throw new AssertionError("unsupported valkey version :" + version);
-            }
-            return VALKEY_VERSIONS.get(version);
-        } else {
-            throw ERROR;
         }
-    }
+        
+        @Override
+        public RdbVisitor rdbVisitor(Replicator replicator) {
+            return new DefaultRdbVisitor(replicator);
+        }
+    }, VALKEY {
+        @Override
+        public String magic() {
+            return "VALKEY";
+        }
+        
+        @Override
+        public String formatRdbVersion(int version) {
+            return lappend(version, 3, '0');
+        }
+        
+        @Override
+        public int resolveRdbVersion(String version) {
+            return VALKEY_VERSIONS.get(version);
+        }
+        
+        @Override
+        public RdbVisitor rdbVisitor(Replicator replicator) {
+            return new ValkeyRdbVisitor(replicator);
+        }
+    };
     
     public static Flavor toFlavor(String flavor) {
-        if (flavor == null) throw ERROR;
-        if (flavor.equals(REDIS.magic.toLowerCase())) return REDIS;
-        if (flavor.equals(VALKEY.magic.toLowerCase())) return VALKEY;
-        throw ERROR;
+        if (flavor.equals(REDIS.magic().toLowerCase())) return REDIS;
+        if (flavor.equals(VALKEY.magic().toLowerCase())) return VALKEY;
+        throw new AssertionError(flavor);
     }
     
     //
     private static final Map<String, Integer> REDIS_VERSIONS = new HashMap<>();
     private static final Map<String, Integer> VALKEY_VERSIONS = new HashMap<>();
-    private static Error ERROR = new AssertionError("unsupported flavor");
     
     static {
         REDIS_VERSIONS.put("2.6", 6);

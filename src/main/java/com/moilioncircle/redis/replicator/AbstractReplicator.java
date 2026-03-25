@@ -20,7 +20,6 @@ import static com.moilioncircle.redis.replicator.Status.CONNECTED;
 import static com.moilioncircle.redis.replicator.Status.DISCONNECTED;
 import static com.moilioncircle.redis.replicator.Status.DISCONNECTING;
 
-import com.moilioncircle.redis.replicator.Flavor;
 import static com.moilioncircle.redis.replicator.util.Tuples.of;
 
 import java.io.EOFException;
@@ -133,9 +132,7 @@ import com.moilioncircle.redis.replicator.cmd.parser.ZUnionStoreParser;
 import com.moilioncircle.redis.replicator.event.AbstractEvent;
 import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.io.RedisInputStream;
-import com.moilioncircle.redis.replicator.rdb.DefaultRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
-import com.moilioncircle.redis.replicator.rdb.ValkeyRdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.datatype.Module;
 import com.moilioncircle.redis.replicator.rdb.module.ModuleKey;
 import com.moilioncircle.redis.replicator.rdb.module.ModuleParser;
@@ -241,9 +238,7 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
     @Override
     public RdbVisitor getRdbVisitor() {
         if (this.rdbVisitor == null) {
-            this.rdbVisitor = configuration.getFlavor() == Flavor.REDIS
-                    ? new DefaultRdbVisitor(this)
-                    : new ValkeyRdbVisitor(this);
+            this.rdbVisitor = configuration.getFlavor().rdbVisitor(this);
         }
         return this.rdbVisitor;
     }
