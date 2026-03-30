@@ -113,8 +113,10 @@ public class DefaultRdbVisitor extends RdbVisitor {
     @Override
     public int applyVersion(RedisInputStream in) throws IOException {
         final FlavorSupport flavor = replicator.getConfiguration().getFlavor();
-        int version = parseInt(BaseRdbParser.StringHelper.str(in, flavor.versionDigits()));
-        flavor.validateRdbVersion(version);
+        int version = parseInt(BaseRdbParser.StringHelper.str(in, 9 - flavor.magic().length()));
+        if (!flavor.validateRdbVersion(version)) {
+            throw new UnsupportedOperationException("can't handle RDB format version " + version);
+        }
         return version;
     }
 

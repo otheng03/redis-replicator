@@ -31,9 +31,8 @@ public class Constants {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '_'
     };
     
-    // latest rdb versions for internal usage only.
+    @Deprecated
     public static final int RDB_VERSION = 12;
-    public static final int VALKEY_VERSION = 80;
     
     /**
      * len type

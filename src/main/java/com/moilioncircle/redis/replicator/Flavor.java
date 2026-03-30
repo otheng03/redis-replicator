@@ -16,10 +16,6 @@
 
 package com.moilioncircle.redis.replicator;
 
-import static com.moilioncircle.redis.replicator.Constants.RDB_VERSION;
-import static com.moilioncircle.redis.replicator.Constants.VALKEY_VERSION;
-import static com.moilioncircle.redis.replicator.util.Strings.lappend;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,30 +33,14 @@ public enum Flavor implements FlavorSupport {
         }
 
         @Override
-        public int versionDigits() {
-            return 4;
-        }
-
-        @Override
-        public String formatRdbVersion(int version) {
-            return lappend(version, versionDigits(), '0');
-        }
-
-        @Override
         public int resolveRdbVersion(String version) {
+            version = version.substring(0, version.lastIndexOf('.'));
             return REDIS_VERSIONS.get(version);
         }
 
         @Override
-        public void validateRdbVersion(int version) {
-            if (version < 2 || version > RDB_VERSION) {
-                throw new UnsupportedOperationException("can't handle RDB format version " + version);
-            }
-        }
-
-        @Override
-        public String slaveRdbVersion() {
-            throw new UnsupportedOperationException(this + " does not use slave RDB version negotiation");
+        public boolean validateRdbVersion(int version) {
+            return version >= 2 && version <= RDB_VERSION;
         }
 
         @Override
@@ -74,33 +54,14 @@ public enum Flavor implements FlavorSupport {
         }
 
         @Override
-        public int versionDigits() {
-            return 3;
-        }
-
-        @Override
-        public String formatRdbVersion(int version) {
-            return lappend(version, versionDigits(), '0');
-        }
-
-        @Override
         public int resolveRdbVersion(String version) {
+            version = version.substring(0, version.lastIndexOf('.'));
             return VALKEY_VERSIONS.get(version);
         }
 
         @Override
-        public void validateRdbVersion(int version) {
-            if (version != VALKEY_VERSION) {
-                throw new UnsupportedOperationException("can't handle RDB format version " + version);
-            }
-        }
-
-        // "9.0.0" is the minimum Valkey server version whose RDB format this replicator supports.
-        // If Valkey's versioning evolves to require different RDB formats per release,
-        // consider introducing a more granular Flavor (e.g., VALKEY_9, VALKEY_10) at that point.
-        @Override
-        public String slaveRdbVersion() {
-            return "9.0.0";
+        public boolean validateRdbVersion(int version) {
+            return version >= VALKEY_VERSION;
         }
 
         @Override
@@ -116,6 +77,9 @@ public enum Flavor implements FlavorSupport {
     }
 
     //
+    private static final int RDB_VERSION = 12;
+    private static final int VALKEY_VERSION = 80;
+    
     private static final Map<String, Integer> REDIS_VERSIONS = new HashMap<>();
     private static final Map<String, Integer> VALKEY_VERSIONS = new HashMap<>();
 

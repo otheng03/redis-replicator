@@ -196,7 +196,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
         sendSlaveCapa("eof");
         sendSlaveCapa("psync2");
         if (configuration.getFlavor() == Flavor.VALKEY) {
-            sendSlaveRdbVersion(configuration.getFlavor().slaveRdbVersion());
+            sendSlaveRdbVersion();
         }
         if (this.replFilters != null) {
             for (ReplFilter filter : this.replFilters) {
@@ -268,7 +268,19 @@ public class RedisSocketReplicator extends AbstractReplicator {
         logger.warn("[REPLCONF ip-address {}] failed. {}", socket.getLocalAddress().getHostAddress(), reply);
     }
     
-    protected void sendSlaveRdbVersion(String version) throws IOException {
+    protected void sendSlaveRdbVersion() throws IOException {
+        send("INFO".getBytes(), "SERVER".getBytes());
+        final String info = Strings.toString(reply());
+        String version = null;
+        for (String line : info.split("\n")) {
+            if (line.startsWith("redis_version:")) {
+                version = line.substring("redis_version:".length()).trim();
+                break;
+            }
+        }
+        if (version == null) {
+            throw new AssertionError("[INFO SERVER] failed. " + info);
+        }
         // REPLCONF rdb-version ${version}
         logger.info("REPLCONF version {}", version);
         send("REPLCONF".getBytes(), "version".getBytes(), version.getBytes());

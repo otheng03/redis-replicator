@@ -21,6 +21,7 @@ import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_EOF;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_EXPIRETIME_MS;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_RESIZEDB;
 import static com.moilioncircle.redis.replicator.Constants.RDB_OPCODE_SELECTDB;
+import static com.moilioncircle.redis.replicator.util.Strings.lappend;
 
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
@@ -86,8 +87,6 @@ public class ScanRdbGenerator {
                     if (key.equals("redis_version")) {
                         String val = kv[1];
                         ver = val;
-                        
-                        val = val.substring(0, val.lastIndexOf('.'));
                         version = flavor.resolveRdbVersion(val);
                     } else if (key.equals("arch_bits")) {
                         bits = kv[1];
@@ -99,7 +98,8 @@ public class ScanRdbGenerator {
              * version
              */
             out.write(flavor.magic().getBytes());
-            out.write(flavor.formatRdbVersion(version).getBytes());
+            int digits = 9 - flavor.magic().length();
+            out.write(lappend(version, digits, '0').getBytes());
             
             /*
              * aux

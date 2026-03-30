@@ -25,15 +25,9 @@ public interface FlavorSupport {
 
 	String magic();
 
-	int versionDigits();
-
-	String formatRdbVersion(int version);
-
 	int resolveRdbVersion(String version);
 
-	void validateRdbVersion(int version);
-
-	String slaveRdbVersion();
+	boolean validateRdbVersion(int version);
 
 	RdbVisitor rdbVisitor(Replicator replicator);
 
