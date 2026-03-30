@@ -22,13 +22,19 @@ import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
  * @author Baoyi Chen
  */
 public interface FlavorSupport {
-	
+
 	String magic();
-	
+
+	int versionDigits();
+
 	String formatRdbVersion(int version);
-	
+
 	int resolveRdbVersion(String version);
-	
+
+	void validateRdbVersion(int version);
+
+	String slaveRdbVersion();
+
 	RdbVisitor rdbVisitor(Replicator replicator);
-	
+
 }
