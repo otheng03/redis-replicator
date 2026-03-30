@@ -39,7 +39,7 @@ public enum Flavor implements FlavorSupport {
         }
 
         @Override
-        public boolean validateRdbVersion(int version) {
+        public boolean isValidRdbVersion(int version) {
             return version >= 2 && version <= RDB_VERSION;
         }
 
@@ -60,8 +60,8 @@ public enum Flavor implements FlavorSupport {
         }
 
         @Override
-        public boolean validateRdbVersion(int version) {
-            return version >= VALKEY_VERSION;
+        public boolean isValidRdbVersion(int version) {
+            return version >= 80 && version <= VALKEY_VERSION;
         }
 
         @Override

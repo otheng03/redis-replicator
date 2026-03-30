@@ -27,7 +27,7 @@ public interface FlavorSupport {
 
 	int resolveRdbVersion(String version);
 
-	boolean validateRdbVersion(int version);
+	boolean isValidRdbVersion(int version);
 
 	RdbVisitor rdbVisitor(Replicator replicator);
 
