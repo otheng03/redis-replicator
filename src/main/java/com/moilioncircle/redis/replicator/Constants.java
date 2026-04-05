@@ -142,4 +142,7 @@ public class Constants {
     public static final byte MINUS = '-';
     public static final byte COLON = ':';
     public static final byte HASHTAG = '#'; // since redis 7.0 TS timestamp
+
+    /** Size of the EOF marker in diskless replication ($EOF:<marker>). */
+    public static final int RDB_EOF_MARK_SIZE = 40;
 }
