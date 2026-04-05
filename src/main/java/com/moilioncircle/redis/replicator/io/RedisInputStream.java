@@ -274,10 +274,10 @@ public class RedisInputStream extends InputStream {
      * drained up to that point, preventing stale bytes from being misread as RESP by
      * {@link com.moilioncircle.redis.replicator.cmd.ReplyParser}.
      *
-     * @param len number of bytes to consume
+     * @param len number of bytes to drain
      * @throws IOException if an I/O error occurs while draining the stream
      */
-    public void consume(int len) throws IOException {
+    public void drain(int len) throws IOException {
         for (int i = 0; i < len; i++) {
             read();
         }
