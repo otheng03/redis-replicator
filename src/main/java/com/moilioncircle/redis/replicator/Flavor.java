@@ -47,6 +47,11 @@ public enum Flavor implements FlavorSupport {
         public RdbVisitor rdbVisitor(Replicator replicator) {
             return new DefaultRdbVisitor(replicator);
         }
+
+        @Override
+        public String serverVersionKey() {
+            return REDIS_VERSION_KEY;
+        }
     }, VALKEY {
         @Override
         public String magic() {
@@ -68,6 +73,11 @@ public enum Flavor implements FlavorSupport {
         public RdbVisitor rdbVisitor(Replicator replicator) {
             return new DefaultRdbVisitor(replicator);
         }
+
+        @Override
+        public String serverVersionKey() {
+            return VALKEY_VERSION_KEY;
+        }
     };
 
     public static Flavor toFlavor(String flavor) {
@@ -77,6 +87,9 @@ public enum Flavor implements FlavorSupport {
     }
 
     //
+    private static final String REDIS_VERSION_KEY = "redis_version";
+    private static final String VALKEY_VERSION_KEY = "valkey_version";
+
     private static final int RDB_VERSION = 12;
     private static final int VALKEY_VERSION = 80;
     
