@@ -30,11 +30,8 @@ public interface FlavorSupport {
 	boolean isValidRdbVersion(int version);
 
 	RdbVisitor rdbVisitor(Replicator replicator);
-
-	/**
-	 * Returns the INFO SERVER field name that holds this flavor's server version.
-	 * The value at this key is sent as {@code REPLCONF version <version>} during handshake.
-	 */
-	String serverVersionKey();
-
+	
+	default String prepend(String suffix) {
+		return magic().toLowerCase() + suffix;
+	}
 }

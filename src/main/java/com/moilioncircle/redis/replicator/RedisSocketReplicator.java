@@ -278,7 +278,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
     protected void sendSlaveRdbVersion() throws IOException {
         send("INFO".getBytes(), "SERVER".getBytes());
         final String info = Strings.toString(reply());
-        final String versionKey = configuration.getFlavor().serverVersionKey() + ":";
+        final String versionKey = configuration.getFlavor().prepend("_version:");
         String version = null;
         for (String line : info.split("\n")) {
             if (line.startsWith(versionKey)) {

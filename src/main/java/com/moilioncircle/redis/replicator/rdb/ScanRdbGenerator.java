@@ -84,7 +84,7 @@ public class ScanRdbGenerator {
                     String[] kv = lines[i].split(":");
                     String key = kv[0];
                     
-                    if (key.equals("redis_version")) {
+                    if (key.equals(flavor.prepend("_version"))) {
                         String val = kv[1];
                         ver = val;
                         version = flavor.resolveRdbVersion(val);
@@ -105,7 +105,7 @@ public class ScanRdbGenerator {
              * aux
              */
             if (version >= 7) {
-                generateAux("redis-ver", ver);
+                generateAux(flavor.prepend("-ver"), ver);
                 generateAux("redis-bits", bits);
                 generateAux("ctime", String.valueOf(System.currentTimeMillis() / 1000L));
                 
