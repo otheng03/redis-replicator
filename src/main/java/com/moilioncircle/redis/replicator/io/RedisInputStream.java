@@ -198,10 +198,14 @@ public class RedisInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
+        return read(true);
+    }
+    
+    private int read(boolean notify) throws IOException {
         if (head >= tail) fill();
         if (mark) markLen += 1;
         byte b = buf[head++];
-        notify(b);
+        if (notify) notify(b);
         return b & 0xff;
     }
 
@@ -275,11 +279,12 @@ public class RedisInputStream extends InputStream {
      * {@link com.moilioncircle.redis.replicator.cmd.ReplyParser}.
      *
      * @param len number of bytes to drain
+     * @param notify notify to RawByteListener
      * @throws IOException if an I/O error occurs while draining the stream
      */
-    public void drain(int len) throws IOException {
+    public void drain(int len, boolean notify) throws IOException {
         for (int i = 0; i < len; i++) {
-            read();
+            read(notify);
         }
     }
 

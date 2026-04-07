@@ -180,7 +180,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     if (len == -1) {
                         // Drain the trailing EOF marker in diskless replication.
                         try {
-                            in.drain(RDB_EOF_MARK_SIZE);
+                            in.drain(RDB_EOF_MARK_SIZE, false);
                         } catch (IOException ignored) {
                             logger.debug("Ignoring IOException reading diskless RDB EOF marker; connection likely closed.", ignored);
                         }
