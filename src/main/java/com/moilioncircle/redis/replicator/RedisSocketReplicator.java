@@ -17,6 +17,7 @@
 package com.moilioncircle.redis.replicator;
 
 import static com.moilioncircle.redis.replicator.Constants.DOLLAR;
+import static com.moilioncircle.redis.replicator.Constants.RDB_EOF_MARK_SIZE;
 import static com.moilioncircle.redis.replicator.Constants.STAR;
 import static com.moilioncircle.redis.replicator.RedisSocketReplicator.SyncMode.PSYNC;
 import static com.moilioncircle.redis.replicator.RedisSocketReplicator.SyncMode.SYNC;
@@ -176,8 +177,14 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     in.skip(len);
                 } else {
                     new RdbParser(in, replicator).parse();
-                    // skip 40 bytes delimiter when disk-less replication
-                    if (len == -1) in.skip(40, false);
+                    if (len == -1) {
+                        // Drain the trailing EOF marker in diskless replication.
+                        try {
+                            in.drain(RDB_EOF_MARK_SIZE);
+                        } catch (IOException ignored) {
+                            logger.debug("Ignoring IOException reading diskless RDB EOF marker; connection likely closed.", ignored);
+                        }
+                    }
                 }
                 return "OK".getBytes();
             }
@@ -271,10 +278,11 @@ public class RedisSocketReplicator extends AbstractReplicator {
     protected void sendSlaveRdbVersion() throws IOException {
         send("INFO".getBytes(), "SERVER".getBytes());
         final String info = Strings.toString(reply());
+        final String versionKey = configuration.getFlavor().serverVersionKey() + ":";
         String version = null;
         for (String line : info.split("\n")) {
-            if (line.startsWith("redis_version:")) {
-                version = line.substring("redis_version:".length()).trim();
+            if (line.startsWith(versionKey)) {
+                version = line.substring(versionKey.length()).trim();
                 break;
             }
         }
