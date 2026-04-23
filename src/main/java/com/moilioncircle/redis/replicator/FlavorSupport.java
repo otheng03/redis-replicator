@@ -30,7 +30,10 @@ public interface FlavorSupport {
 	boolean isValidRdbVersion(int version);
 
 	RdbVisitor rdbVisitor(Replicator replicator);
-	
+
+	default void extendCommandParsers(Replicator replicator) {
+	}
+
 	default String prepend(String suffix) {
 		return magic().toLowerCase() + suffix;
 	}
