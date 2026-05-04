@@ -51,6 +51,7 @@ import com.moilioncircle.redis.replicator.util.Strings;
  * @author otheng03
  * @since 3.12.0
  */
+@EnabledIfValkey
 public class HashFieldExpireTest extends OnlineTestBase {
 
     /**
