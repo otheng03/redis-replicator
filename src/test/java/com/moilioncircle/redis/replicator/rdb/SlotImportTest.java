@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 Leon Chen
+ * Copyright 2026 otheng03
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package com.moilioncircle.redis.replicator.rdb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,5 +71,18 @@ public class SlotImportTest {
     public void testSkipRdbVisitor() throws IOException {
         List<Event> events = parse(true);
         assertTrue(events.get(events.size() - 1) instanceof PostRdbSyncEvent);
+    }
+
+    @Test
+    public void testRedisFlavorRejectsOpcode243() throws IOException {
+        // redis 8.6+ uses 243 for RDB_OPCODE_KEY_META, so it must never be parsed as a slot import
+        byte[] rdb = {'R', 'E', 'D', 'I', 'S', '0', '0', '1', '2', (byte) 243};
+        Replicator replicator = new RedisReplicator(new ByteArrayInputStream(rdb), FileType.RDB, Configuration.defaultSetting());
+        try {
+            replicator.open();
+            fail("expected opcode 243 to be rejected for redis");
+        } catch (AssertionError e) {
+            assertTrue(e.getMessage(), e.getMessage().startsWith("unexpected value type:243"));
+        }
     }
 }
